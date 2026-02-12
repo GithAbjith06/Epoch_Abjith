@@ -79,7 +79,6 @@ class ProjectAnalyzer:
 
         self._traverse(self.root, self.root_node)
 
-        # Apply slicing limits
         self.summary["dependencies"] = \
             list(self.summary["dependencies"])[:self.config.MAX_DEPENDENCIES]
 
@@ -200,8 +199,7 @@ class ProjectAnalyzer:
 
             return info
 
-        except Exception as e:
-            print(f"File analysis error: {e}")
+        except Exception:
             return None
 
     def _update_summary(self, file_info: FileInfo):
@@ -258,8 +256,7 @@ Explain:
 - Assumptions or limitations
 - Edge cases handled
 
-Write naturally. Do not sound robotic.
-Use clear Markdown headings.
+Write naturally and professionally using Markdown headings.
 """),
             ("human",
              """Project Analysis:
@@ -301,13 +298,13 @@ Generate the README now.
         })
 
         if not readme or len(readme.strip()) < 50:
-            raise ValueError("Generated README appears empty or invalid")
+            raise ValueError("Generated README appears invalid.")
 
         return readme
 
 
 # =====================================================
-# Public API Functions
+# Public Functions
 # =====================================================
 def generate_project_readme(project_path: str) -> Dict[str, Any]:
 
