@@ -1,41 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>README Generator</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-
-<div class="container">
-    <h1>README Generator Agent</h1>
-
-    <div class="input-group">
-        <input type="text" id="projectPath" placeholder="Enter project folder path..." />
-        <button onclick="generateReadme()">Generate</button>
-    </div>
-
-    <div id="status"></div>
-
-    <textarea id="output" placeholder="Generated README will appear here..."></textarea>
-</div>
-
 <script>
-async function generateReadme() {
-    const path = document.getElementById("projectPath").value;
+async function uploadZip() {
+    const fileInput = document.getElementById("zipFile");
     const output = document.getElementById("output");
     const status = document.getElementById("status");
 
+    if (!fileInput.files.length) {
+        status.innerText = "Please select a ZIP file.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("zip_file", fileInput.files[0]);
+
+    status.innerText = "Uploading and generating...";
     output.value = "";
-    status.innerText = "Generating...";
 
     try {
-        const response = await fetch("/api/generate-readme", {
+        const response = await fetch("/api/upload-zip", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ project_path: path })
+            body: formData
         });
 
         const data = await response.json();
@@ -48,10 +31,7 @@ async function generateReadme() {
         }
 
     } catch (error) {
-        status.innerText = "Request failed.";
+        status.innerText = "Upload failed.";
     }
 }
 </script>
-
-</body>
-</html>

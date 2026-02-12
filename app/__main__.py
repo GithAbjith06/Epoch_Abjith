@@ -1,21 +1,19 @@
-from fastapi import FastAPI, Request
+import os
+import shutil
+import tempfile
+import zipfile
+
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.readme_agent import generate_project_readme, save_readme
-from app.models import ReadmeRequest, ReadmeResponse
+from app.readme_agent import generate_project_readme
 from app.config import MODEL_NAME
 
-app = FastAPI(
-    title="README Generator Agent",
-    version="1.0.0"
-)
+app = FastAPI(title="README Generator Agent", version="1.0.0")
 
-# Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-# Templates
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -25,20 +23,35 @@ def home(request: Request):
 
 
 @app.get("/health")
-def health_check():
+def health():
     return {
         "status": "healthy",
-        "service": app.title,
-        "version": app.version,
         "model": MODEL_NAME
     }
 
 
-@app.post("/api/generate-readme", response_model=ReadmeResponse)
-def api_generate_readme(req: ReadmeRequest):
-    return generate_project_readme(req.project_path)
+@app.post("/api/upload-zip")
+async def upload_zip(zip_file: UploadFile = File(...)):
 
+    if not zip_file.filename.endswith(".zip"):
+        return {"success": False, "error": "Only ZIP files allowed."}
 
-@app.post("/api/readme/save", response_model=ReadmeResponse)
-def api_save_readme(req: ReadmeRequest):
-    return save_readme(req.project_path)
+    temp_dir = tempfile.mkdtemp()
+
+    try:
+        zip_path = os.path.join(temp_dir, zip_file.filename)
+
+        with open(zip_path, "wb") as buffer:
+            buffer.write(await zip_file.read())
+
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+
+        result = generate_project_readme(temp_dir)
+        return result
+
+    except zipfile.BadZipFile:
+        return {"success": False, "error": "Invalid ZIP file."}
+
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)

@@ -9,4 +9,4 @@ TEMPERATURE = float(os.getenv("TEMPERATURE", "0.2"))
 MAX_TOKENS = int(os.getenv("MAX_TOKENS", "2048"))
 
 if not GOOGLE_API_KEY:
-    raise ValueError("GOOGLE_API_KEY is not set in the environment.")
+    raise ValueError("GOOGLE_API_KEY is not set in environment.")

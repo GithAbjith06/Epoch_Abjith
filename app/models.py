@@ -2,13 +2,9 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class ReadmeRequest(BaseModel):
-    project_path: str
-
-
 class ReadmeResponse(BaseModel):
     success: bool
     readme: Optional[str] = None
-    project_path: str
+    project_path: Optional[str] = None
     message: Optional[str] = None
     error: Optional[str] = None
