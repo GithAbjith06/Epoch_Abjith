@@ -1,167 +1,192 @@
 # README Generator Agent
 
-An AI-based agent that automatically generates a complete `README.md` file for a given project directory.
+An AI-powered system that automatically generates a professional `README.md` file from a project ZIP upload.
 
-The system analyzes the project structure, extracts metadata, and uses a language model to produce structured documentation.
+Built using FastAPI and Google Gemini.
 
 ---
 
 ## Overview
 
-This project implements a README generation agent that combines deterministic static analysis with LLM-based documentation synthesis.
+This application analyzes a project structure by extracting an uploaded ZIP file, inspecting its contents, and generating a structured README file using a Large Language Model.
 
-Instead of sending raw project files directly to a language model, the system first performs structured analysis. It then uses the extracted metadata to generate a clear and organized README file.
-
-This approach improves reliability, reduces noise, and makes the output more consistent.
-
----
-
-## How It Works
-
-The system operates in two stages:
-
-### 1. Static Analysis
-
-The agent:
-
-- Recursively traverses the project directory  
-- Builds a nested directory structure tree  
-- Extracts Python functions, classes, and imports using `ast`  
-- Detects dependencies  
-- Tracks file types and total lines of code  
-- Applies strict safety limits  
-
-Safety limits include:
-
-- Maximum 500 files processed  
-- Maximum directory depth of 10  
-- Maximum file size of 100 KB  
-- Ignoring hidden and common cache/build directories  
-
-### 2. README Generation
-
-After analysis, structured metadata is passed to Google Gemini via LangChain.
-
-A controlled prompt is used to generate a human-readable README that typically includes:
-
-- Project overview  
-- Key features  
-- Installation instructions  
-- Usage guidance  
-- Project structure  
-- Dependencies  
-- Assumptions and limitations  
-- Edge case handling  
-
-The output is validated before being returned or saved.
+The system focuses only on README generation and does not include docstring generation.
 
 ---
 
 ## Features
 
-- Recursive project traversal  
-- Nested directory tree generation  
-- Python AST-based metadata extraction  
-- Dependency detection from import statements  
-- File type summary  
-- CLI interface  
-- FastAPI REST API  
-- Option to save README directly to disk  
-- Safety limits for large or complex repositories  
+- Upload a project as a ZIP file
+- Automatic directory traversal and structure analysis
+- Python AST parsing for:
+  - Functions
+  - Classes
+  - Imports
+- Dependency detection from import statements
+- File type summary
+- Structured project tree visualization
+- AI-generated README using Google Gemini
+- Temporary extraction with automatic cleanup
+- Clean and minimal web interface
+
+---
+
+## How It Works
+
+1. User uploads a project ZIP file.
+2. The server extracts it into a temporary directory.
+3. The project is analyzed:
+   - File structure is mapped.
+   - Python files are parsed using `ast`.
+   - Functions, classes, and imports are collected.
+4. The collected metadata is sent to Gemini.
+5. Gemini generates a structured `README.md`.
+6. Temporary files are deleted.
+
+No uploaded code is executed at any point.
+
+---
+
+## Project Structure
+
+Epoch_Abjith/
+├── app/
+│ ├── init.py
+│ ├── main.py
+│ ├── config.py
+│ ├── models.py
+│ ├── readme_agent.py
+│ ├── utils.py
+│ ├── static/
+│ │ └── styles.css
+│ └── templates/
+│ └── index.html
+├── requirements.txt
+└── README.md
+
 
 ---
 
 ## Installation
 
-1. Clone the repository.
-2. Install dependencies:
+### 1. Clone the repository
 
-```bash
+git clone <your-repo-url>
+cd Epoch_Abjith
+
+
+### 2. Create virtual environment
+
+python -m venv venv
+venv\Scripts\activate (Windows)
+source venv/bin/activate (Linux/Mac)
+
+
+### 3. Install dependencies
+
 pip install -r requirements.txt
-```
 
-3. Create a `.env` file:
 
-```
-GOOGLE_API_KEY=your_api_key_here
-MODEL_NAME=gemini-1.5-flash
-TEMPERATURE=0.2
-MAX_TOKENS=2048
-```
+### 4. Set your API key
+
+Create a `.env` file in the project root:
+
+GOOGLE_API_KEY=your_gemini_api_key
+
 
 ---
 
-## Usage
+## Running the Application
 
-### Command Line
+From inside the project root:
 
-Generate and print README:
+uvicorn app.main:app --reload
 
-```bash
-python -m app.cli readme /path/to/project
-```
 
-Generate and save to disk:
+Open in browser:
 
-```bash
-python -m app.cli readme /path/to/project --save
-```
+http://127.0.0.1:8000
 
-Save to a custom file:
-
-```bash
-python -m app.cli readme /path/to/project --save --output ./custom_readme.md
-```
 
 ---
 
-### API Server
+## API Endpoints
 
-Start the server:
+### Health Check
 
-```bash
-uvicorn app.api:app --reload
-```
+GET /health
 
-Available endpoints:
 
-- `GET /health` — Service health check  
-- `POST /api/readme` — Generate README  
-- `POST /api/readme/save` — Generate and save README  
-
-Example request:
-
-```bash
-curl -X POST http://localhost:8000/api/readme \
-  -H "Content-Type: application/json" \
-  -d '{"project_path": "/path/to/project"}'
-```
+Returns server status and model name.
 
 ---
 
-## Assumptions and Limitations
+### Upload ZIP & Generate README
 
-- Only Python files are parsed for functions, classes, and imports.  
-- Files larger than 100 KB are skipped.  
-- Maximum 500 files and depth 10 are processed.  
-- Binary files and hidden directories are ignored.  
-- Internet access is required for Gemini API.  
-- Output quality depends on extracted metadata and model response.  
+POST /api/upload-zip
+
+
+Form-data:
+zip_file: project.zip
+
+
+Returns:
+
+{
+"success": true,
+"readme": "...generated markdown...",
+"project_path": "temporary_path"
+}
+
+
+---
+
+## Safety Measures
+
+- Maximum file size limit (100 KB per file)
+- Maximum traversal depth (10 levels)
+- Hidden folders ignored
+- Virtual environments ignored
+- ZIP file validation
+- Corrupted ZIP detection
+- Temporary directory cleanup
+- No code execution
+- AST parsing only
+
+---
+
+## Assumptions & Limitations
+
+- Designed primarily for Python projects.
+- Only `.py` files are deeply analyzed.
+- Large projects (>500 files) may be partially analyzed.
+- Generated README quality depends on LLM output.
 
 ---
 
 ## Edge Cases Handled
 
-- Empty directories  
-- Permission errors  
-- Syntax errors in Python files  
-- Large files exceeding size limit  
-- Deeply nested directory structures  
-- Hidden and cache folders  
-- Projects without Python code  
+- Empty ZIP files
+- Corrupted ZIP uploads
+- Projects with nested folders
+- Hidden files
+- Syntax errors in Python files
+- Permission errors
+- Non-Python projects (basic structural README generated)
 
 ---
 
-## Purpose
+## Technology Stack
 
-This project demonstrates how structured static analysis can be combined with large language models to automate documentation generation in a controlled and reliable way.
+- FastAPI
+- Google Gemini (gemini-2.5-flash)
+- LangChain
+- Python AST
+- Jinja2
+- Vanilla HTML/CSS
+
+---
+
+## License
+
+MIT License
