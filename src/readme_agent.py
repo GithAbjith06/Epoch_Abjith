@@ -8,8 +8,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-from app.config import GOOGLE_API_KEY, MODEL_NAME, TEMPERATURE, MAX_TOKENS
-from app.utils import format_structure_tree
+from src.config import GOOGLE_API_KEY, MODEL_NAME, TEMPERATURE, MAX_TOKENS
+from src.utils import format_structure_tree
 
 
 @dataclass

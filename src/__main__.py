@@ -9,8 +9,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.readme_agent import generate_project_readme
-from app.config import MODEL_NAME
+from src.readme_agent import generate_project_readme
+from src.config import MODEL_NAME
 
 
 app = FastAPI(title="README Generator Agent", version="1.0.0")
