@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  readme-agent:
+    build: .
+    container_name: readme_agent
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped

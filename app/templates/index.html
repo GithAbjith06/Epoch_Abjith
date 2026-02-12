@@ -1,8 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>README Generator Agent</title>
+
+    <!-- MUST be absolute path -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>README Generator Agent</h1>
+    <p class="subtitle">Upload a project ZIP file to generate a README.md automatically.</p>
+
+    <div class="upload-section">
+        <input type="file" id="zipFile" accept=".zip">
+        <button id="generateBtn">Generate README</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="actions" id="actions" style="display:none;">
+        <button id="copyBtn">Copy</button>
+        <button id="downloadBtn">Download</button>
+    </div>
+
+    <textarea id="output" placeholder="Generated README will appear here..."></textarea>
+
+</div>
+
 <script>
+document.getElementById("generateBtn").addEventListener("click", uploadZip);
+document.getElementById("copyBtn").addEventListener("click", copyToClipboard);
+document.getElementById("downloadBtn").addEventListener("click", downloadReadme);
+
 async function uploadZip() {
     const fileInput = document.getElementById("zipFile");
     const output = document.getElementById("output");
     const status = document.getElementById("status");
+    const actions = document.getElementById("actions");
 
     if (!fileInput.files.length) {
         status.innerText = "Please select a ZIP file.";
@@ -12,8 +49,9 @@ async function uploadZip() {
     const formData = new FormData();
     formData.append("zip_file", fileInput.files[0]);
 
-    status.innerText = "Uploading and generating...";
     output.value = "";
+    actions.style.display = "none";
+    status.innerText = "Uploading and generating README...";
 
     try {
         const response = await fetch("/api/upload-zip", {
@@ -25,13 +63,40 @@ async function uploadZip() {
 
         if (data.success) {
             output.value = data.readme;
-            status.innerText = "Success";
+            status.innerText = "README generated successfully.";
+            actions.style.display = "flex";
         } else {
-            status.innerText = "Error: " + data.error;
+            status.innerText = "Error: " + (data.error || "Unknown error");
         }
 
     } catch (error) {
-        status.innerText = "Upload failed.";
+        status.innerText = "Upload failed. Please try again.";
     }
 }
+
+function copyToClipboard() {
+    const output = document.getElementById("output");
+    navigator.clipboard.writeText(output.value)
+        .then(() => alert("Copied to clipboard!"))
+        .catch(() => alert("Copy failed."));
+}
+
+function downloadReadme() {
+    const content = document.getElementById("output").value;
+
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "README.md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
 </script>
+
+</body>
+</html>
