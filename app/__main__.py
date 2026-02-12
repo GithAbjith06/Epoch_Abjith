@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import zipfile
+from pathlib import Path
 
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
@@ -11,10 +12,21 @@ from fastapi.templating import Jinja2Templates
 from app.readme_agent import generate_project_readme
 from app.config import MODEL_NAME
 
+
 app = FastAPI(title="README Generator Agent", version="1.0.0")
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
+# 🔥 Absolute path fix
+BASE_DIR = Path(__file__).resolve().parent
+
+app.mount(
+    "/static",
+    StaticFiles(directory=BASE_DIR / "static"),
+    name="static"
+)
+
+templates = Jinja2Templates(
+    directory=str(BASE_DIR / "templates")
+)
 
 
 @app.get("/", response_class=HTMLResponse)
