@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>README Generator</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>README Generator Agent</h1>
+
+    <div class="input-group">
+        <input type="text" id="projectPath" placeholder="Enter project folder path..." />
+        <button onclick="generateReadme()">Generate</button>
+    </div>
+
+    <div id="status"></div>
+
+    <textarea id="output" placeholder="Generated README will appear here..."></textarea>
+</div>
+
+<script>
+async function generateReadme() {
+    const path = document.getElementById("projectPath").value;
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+
+    output.value = "";
+    status.innerText = "Generating...";
+
+    try {
+        const response = await fetch("/api/generate-readme", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ project_path: path })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            output.value = data.readme;
+            status.innerText = "Success";
+        } else {
+            status.innerText = "Error: " + data.error;
+        }
+
+    } catch (error) {
+        status.innerText = "Request failed.";
+    }
+}
+</script>
+
+</body>
+</html>
